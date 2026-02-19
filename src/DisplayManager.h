@@ -23,8 +23,6 @@ private:
 
     double et = NAN;
     double bt = NAN;
-    double rorEt = NAN;
-    double rorBt = NAN;
     String tempUnit = "C";
 
     int screenRotation = 0;
@@ -46,12 +44,11 @@ private:
 
     /**
      * @brief Draws temperature data on the display.
-     * @param label The label for the temperature (e.g., "ET" or "BT").
+     * @param label The label for the temperature (e.g., "Exh" or "Amb").
      * @param temp The temperature value.
-     * @param ror The rate of rise (RoR) value.
      * @param yCursor The vertical position on the display.
      */
-    void drawTemperature(String label, double temp, double ror, int yCursor);
+    void drawTemperature(String label, double temp, int yCursor);
 
     /**
      * @brief Displays the splash screen.

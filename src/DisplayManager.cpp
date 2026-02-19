@@ -39,11 +39,22 @@ void DisplayManager::drawHeader()
     if (!hasDisplay)
         return;
 
-    String text = "CROASTER V" + String(version);
+    String text;
 
     if (isIpShowed && !ipAddr.isEmpty())
     {
         text = ipAddr;
+    }
+    else
+    {
+        unsigned long totalSecs = millis() / 1000;
+        unsigned int hours = totalSecs / 3600;
+        unsigned int mins  = (totalSecs % 3600) / 60;
+        unsigned int secs  = totalSecs % 60;
+
+        char buf[12];
+        snprintf(buf, sizeof(buf), "%02u:%02u:%02u", hours, mins, secs);
+        text = String(buf);
     }
 
     display.setTextSize(1);
@@ -51,7 +62,7 @@ void DisplayManager::drawHeader()
     display.print(text);
 }
 
-void DisplayManager::drawTemperature(String label, double temp, double ror, int yCursor)
+void DisplayManager::drawTemperature(String label, double temp, int yCursor)
 {
     if (!hasDisplay)
         return;
@@ -67,17 +78,7 @@ void DisplayManager::drawTemperature(String label, double temp, double ror, int 
     display.setCursor(tempX, yCursor);
     display.print(tempText);
 
-    if (!isnan(temp))
-    {
-        String rorText = String((int)round(ror));
 
-        if (ror >= 0 && ror < 10)
-            rorText = String((double)ror, 1);
-
-        display.setTextSize(1);
-        display.setCursor(0, yCursor + 14);
-        display.print(rorText);
-    }
 }
 
 void DisplayManager::splash()
@@ -140,17 +141,15 @@ void DisplayManager::loop()
         lastUpdate = now;
 
         et = croaster->tempEt;
-        rorEt = croaster->rorEt;
         bt = croaster->tempBt;
-        rorBt = croaster->rorBt;
         tempUnit = croaster->temperatureUnit();
         ipAddr = getIpAddress();
 
         display.clearDisplay();
         drawHeader();
 
-        drawTemperature("BT", bt, rorBt, 16);
-        drawTemperature("ET", et, rorEt, 43);
+        drawTemperature("Exh", bt, 16);
+        drawTemperature("Amb", et, 43);
 
         display.display();
     }
