@@ -14,6 +14,9 @@
 #include "CroasterCore.h"
 #include "DisplayManager.h"
 #include "CommandHandler.h"
+#if defined(ESP8266)
+#include "SinricManager.h"
+#endif
 
 // === Global Instances ===
 CroasterCore croaster(dummyMode);
@@ -27,6 +30,10 @@ BleManager bleManager(croaster, commandHandler);
 #endif
 
 WebSocketManager wsManager(croaster, commandHandler);
+
+#if defined(ESP8266)
+SinricManager sinricManager(croaster);
+#endif
 
 // === Arduino Setup ===
 void setup()
@@ -45,6 +52,10 @@ void setup()
   wsManager.begin();
 
   displayManager.begin();
+
+#if defined(ESP8266)
+  sinricManager.begin();
+#endif
 }
 
 // === Arduino Loop ===
@@ -63,4 +74,8 @@ void loop()
 #endif
 
   commandHandler.loop();
+
+#if defined(ESP8266)
+  sinricManager.loop();
+#endif
 }
