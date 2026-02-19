@@ -53,7 +53,7 @@ public:
             return;
 
         SinricProTemperaturesensor &tempSensor = SinricPro[SINRIC_DEVICE_ID];
-        tempSensor.sendTemperatureEvent(ambientTemp);
+        tempSensor.sendTemperatureEvent(ambientTemp, -1);
 
         debugln("# Sinric: sent ambient temp " + String(ambientTemp, 1));
     }
