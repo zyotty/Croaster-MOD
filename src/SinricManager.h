@@ -6,6 +6,7 @@
 #include <SinricPro.h>
 #include <SinricProTemperaturesensor.h>
 #include "CroasterCore.h"
+#include "Constants.h"
 
 #define SINRIC_APP_KEY    "5d8ef972-0170-4f0e-a401-166d88060d9f"
 #define SINRIC_APP_SECRET "bf491935-faea-4d08-a6e2-0de3764fb0b3-e2cbd5bd-124f-4d6d-862d-066e3c75505f"
@@ -14,6 +15,8 @@
 /**
  * @class SinricManager
  * @brief Sends ET (Ambient) temperature to Sinric Pro / Google Home.
+ * Implemented as header-only to avoid duplicate symbol errors with
+ * SinricPro's header-only library architecture.
  */
 class SinricManager
 {
@@ -23,21 +26,37 @@ private:
     const unsigned long sendInterval = 10000; // Send every 10 seconds
 
 public:
-    /**
-     * @brief Constructs a SinricManager instance.
-     * @param croaster Reference to the CroasterCore instance.
-     */
-    SinricManager(CroasterCore &croaster);
+    SinricManager(CroasterCore &croaster) : croaster(&croaster) {}
 
-    /**
-     * @brief Initializes Sinric Pro connection.
-     */
-    void begin();
+    void begin()
+    {
+        SinricProTemperaturesensor &tempSensor = SinricPro[SINRIC_DEVICE_ID];
+        (void)tempSensor; // Register device with SinricPro
+        SinricPro.begin(SINRIC_APP_KEY, SINRIC_APP_SECRET);
+        debugln(F("# SinricPro initialized"));
+    }
 
-    /**
-     * @brief Handles Sinric Pro updates in the main loop.
-     */
-    void loop();
+    void loop()
+    {
+        SinricPro.handle();
+
+        unsigned long now = millis();
+
+        if (now - lastSend < sendInterval)
+            return;
+
+        lastSend = now;
+
+        double ambientTemp = croaster->tempEt;
+
+        if (isnan(ambientTemp))
+            return;
+
+        SinricProTemperaturesensor &tempSensor = SinricPro[SINRIC_DEVICE_ID];
+        tempSensor.sendTemperatureEvent(ambientTemp);
+
+        debugln("# Sinric: sent ambient temp " + String(ambientTemp, 1));
+    }
 };
 
 #endif // ESP8266
